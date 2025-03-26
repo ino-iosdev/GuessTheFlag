@@ -31,6 +31,9 @@ struct ContentView: View {
     @State private var questionCount = 0
     @State private var score = 0
     
+    // New state variable to track the selected flag
+    @State private var selectedFlag: Int? = nil
+    
     var body: some View {
         ZStack {
             RadialGradient(stops: [
@@ -58,9 +61,21 @@ struct ContentView: View {
                     
                     ForEach(0..<3) { number in
                         Button {
+                            withAnimation {
+                                selectedFlag = number // Track the selected flag
+                            }
                             flagTapped(number)
                         } label: {
                             FlagImage(country: countries[number])
+                                // Apply rotation effect to the selected flag
+                                .rotation3DEffect(
+                                    .degrees(selectedFlag == number ? 360 : 0),
+                                    axis: (x: 0, y: 1, z: 0)
+                                )
+                                // Apply scaling and opacity effects to unselected flags
+                                .scaleEffect(selectedFlag == nil || selectedFlag == number ? 1 : 0.5)
+                                .opacity(selectedFlag == nil || selectedFlag == number ? 1 : 0.25) // Fade out non-selected flags
+                                .animation(.easeInOut(duration: 1), value: selectedFlag)
                         }
                     }
                 }
@@ -122,6 +137,7 @@ struct ContentView: View {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
         questionCount += 1
+        selectedFlag = nil // Reset the selected flag
     }
     
     func resetGame() {
